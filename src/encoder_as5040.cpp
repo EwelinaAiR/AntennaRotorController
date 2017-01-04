@@ -14,17 +14,16 @@ void EncoderAS5040::Fsm(uint16_t data) {
 void EncoderAS5040::HardwareInit()
 {
 
-	// za³aczenie CLK  dla peryferiów
+	// set CLK
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 	RCC->APB1ENR |= RCC_APB1ENR_SPI2EN;
 
 	// GPIO: PB14 - MISO, PB13 - CLK, PB12 - nCS
-
-	// ustawienie predkosci pracy linii portu
+	// set speed of GPIOs
 	GPIOB->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR12 | GPIO_OSPEEDER_OSPEEDR13 | GPIO_OSPEEDER_OSPEEDR14 | GPIO_OSPEEDER_OSPEEDR15);
 	GPIOB->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR12_1 | GPIO_OSPEEDER_OSPEEDR13_1 | GPIO_OSPEEDER_OSPEEDR14_1 | GPIO_OSPEEDER_OSPEEDR15_1;
 
-	// ustawienie multipleksera (wedlug dokumencjacji danego typu procesora)
+	// GPIOs remapping (based on manual STM32F407)
 	GPIOB->AFR[1] &= ~((uint32_t) 0xF << ((14-8)*4) | (uint32_t) 0xF << ((13-8)*4));
 	GPIOB->AFR[1] |= (uint32_t) 5 << ((14-8)*4) | (uint32_t) 5 << ((13-8)*4);
 

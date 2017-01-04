@@ -3,12 +3,13 @@
 #include "stm32f4xx.h"
 
 // powiazania kanalow DMA z nadajnikiem i odbiornikiem UART
-#define DMA_USART_RX	DMA1_Stream5
-#define DMA_USART_TX	DMA1_Stream6
+#define DMA_USART_RX	DMA2_Stream5
+#define DMA_USART_TX	DMA2_Stream7
 
-class UartCommunicationInterface {
+class UartCommunicationInterface
+{
 
-	// definicje stanow automatu do odbioru ramek komunikacyjnych
+	// definition of states in FSM (finite state machine)
 	enum FsmState
 	{
 		FR_IDLE,
@@ -18,7 +19,7 @@ class UartCommunicationInterface {
 		FR_DATA
 	};
 
-	static uint16_t const RX_TIMEOUT = 50;	// definicja maksymalnego czasu przesylania danych w ramce
+	static uint16_t const RX_TIMEOUT = 50;	// in [ms]
 
 	volatile uint8_t  rxFrameIndex;
 	volatile FsmState  rxState;
@@ -62,7 +63,7 @@ public:
 		auto crc1 = CRC16(rxFrame, rxFrameSize-1);
 		auto crc2 = __REV16(0);
 
-		// tymczasowo
+		// TO DO! Check CRC.
 		crc2 = crc1;
 		if (crc1 == crc2)
 		{
@@ -73,16 +74,16 @@ public:
 
 	void IrqDma()
 	{
-		DMA1->HIFCR = DMA_HIFCR_CTCIF6 | DMA_HIFCR_CHTIF6 | DMA_HIFCR_CTEIF6 | DMA_HIFCR_CDMEIF6 | DMA_HIFCR_CFEIF6;
+		DMA2->HIFCR = DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7;
 		DMA_USART_TX->CR &= ~DMA_SxCR_EN;
-		USART2->CR1 |= USART_CR1_TCIE;
+		USART1->CR1 |= USART_CR1_TCIE;
 	}
 
 	void IrqTx()
 	{
-		if (USART2->SR & USART_SR_TC)
+		if (USART1->SR & USART_SR_TC)
 		{
-		    USART2->CR1 &= ~USART_CR1_TCIE;
+		    USART1->CR1 &= ~USART_CR1_TCIE;
 		    isFrameSending = false;
 		}
 	}

@@ -1,6 +1,6 @@
 #include "uart_communication_interface.h"
 
-//  Obliczanie 16-bitowego CRC (analogicznie jak w standardzie Modbus RTU)
+//  16-bit CRC (based on Modbus RTU)
 uint16_t UartCommunicationInterface::CRC16(const uint8_t *nData, uint16_t wLength)
 {
   static const uint16_t wCRCTable[] =
@@ -54,48 +54,47 @@ uint16_t UartCommunicationInterface::CRC16(const uint8_t *nData, uint16_t wLengt
 void UartCommunicationInterface::HardwareInit()
 {
 
-	// zalaczenie portu PA
+	// Set clk
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-	// zalaczenie zegara bloku USART2
-	RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
-	// zalaczenie zegara kontrolera DMA1
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
+	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 
-	// PA2 - UART2_TX (out), PA3 - UART_RX (in)
-	// remapowanie linii wg dokumentacji STM32F407
-	GPIOA->AFR[0] |= (uint32_t) 7 << 8 | (uint32_t) 7 << 12;
-	GPIOA->MODER |=  GPIO_MODER_MODER2_1 | GPIO_MODER_MODER3_1;
-	GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR2_1 | GPIO_OSPEEDER_OSPEEDR3_1;
-	GPIOA->ODR |= GPIO_ODR_ODR_2; // podwieszenie linii
+	// PA9 - UART1_TX (out), PA10 - UART_RX (in)
+	// GPIOs remapping (based on manual STM32F407)
+	// TO DO! Enable hardware driver!!!
+	GPIOA->AFR[1] &= ~((uint32_t) 0xF << (4*(9-8)) | (uint32_t) 0xF << (4*(10-8)));
+	GPIOA->AFR[1] |= (uint32_t) 7 << (4*(9-8)) | (uint32_t) 7 << (4*(10-8));
 
-	// Parametry transmisji
-	USART2->BRR = 0x16D; //115,2kbs //0x0341;//
-	USART2->CR1 = USART_CR1_RE | USART_CR1_TE;
-	USART2->CR3 = USART_CR3_DMAT | USART_CR3_DMAR;
-	USART2->CR1 |= USART_CR1_UE;
+	GPIOA->MODER |=  GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1;
+	GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR9_1 | GPIO_OSPEEDER_OSPEEDR10_1;
+	GPIOA->ODR |= GPIO_ODR_ODR_9;
 
-	// DMA1: USART2 RX : stream 5,  USART2 TX : stream 6
+	// USART settings
+	USART1->BRR = 0x16D; //115,2kbs //0x0341;//
+	USART1->CR1 = USART_CR1_RE | USART_CR1_TE;
+	USART1->CR3 = USART_CR3_DMAT | USART_CR3_DMAR;
+	USART1->CR1 |= USART_CR1_UE;
 
-	// RX - urzadzenie->pamiec, automatyczna inkrementacja wskaznika pamieci, znaki 8-bitowe, bufor cyckliczny
+	// DMA2: USART1 RX : stream 5,  USART1 TX : stream 7
+	// RX - device->memory, memory auto increment, 8-bit chars, cyclic buffer
 	DMA_USART_RX->CR = DMA_SxCR_CHSEL_2 | DMA_SxCR_MINC | DMA_SxCR_CIRC;
 	DMA_USART_RX->NDTR = RX_BUF_SIZE;
-	DMA_USART_RX->PAR = (int) &(USART2->DR);
-	DMA_USART_RX->M0AR = (int) rxBuf;
+	DMA_USART_RX->PAR = (uint32_t) &(USART1->DR);
+	DMA_USART_RX->M0AR = (uint32_t) rxBuf;
 
-	//TX - pamiec->urzadzenie, automatyczna inkrementacja wskaznika pamieci
+	//TX - memory->device, memory auto increment
 	DMA_USART_TX->CR = DMA_SxCR_CHSEL_2 | DMA_SxCR_MINC | DMA_SxCR_DIR_1;
-	DMA_USART_TX->PAR = (int) &(USART2->DR);
+	DMA_USART_TX->PAR = (uint32_t) &(USART1->DR);
 
-	// zerowanie bitow statusowych (w tym flag b³êdów) kontrolera DMA1
-	DMA1->HIFCR = DMA_HIFCR_CTCIF5 | DMA_HIFCR_CHTIF5 | DMA_HIFCR_CTEIF5 | DMA_HIFCR_CDMEIF5 | DMA_HIFCR_CFEIF5;
+	// clear status bits (including error flags) of DMA2 controller (receive channel)
+	DMA2->HIFCR = DMA_HIFCR_CTCIF5 | DMA_HIFCR_CHTIF5 | DMA_HIFCR_CTEIF5 | DMA_HIFCR_CDMEIF5 | DMA_HIFCR_CFEIF5;
 
-	// zezwolenie na obsluge przerwan od kanalu DMA
+	// enable of DMA interrupt
 	DMA_USART_RX->CR |= DMA_SxCR_EN;
 }
 
 void UartCommunicationInterface::Init()
 {
-
 	HardwareInit();
 
 	isFrameSending = false;
@@ -114,56 +113,58 @@ void UartCommunicationInterface::Send(uint16_t size)
 	txBuf[size+4] = crc >> 8;
 	txBuf[size+5] = crc & 0xFF;
 
-	// reset kanalu DMA
+	// reset DMA channel
 	DMA_USART_TX->CR = 0;
 	DMA_USART_TX->CR = DMA_SxCR_CHSEL_2 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;
 	DMA_USART_TX->NDTR = size + 6;
-	DMA_USART_TX->M0AR = (int) txBuf;
+	DMA_USART_TX->M0AR = (uint32_t) txBuf;
 
-	// czyszczenie bitow statusowych (wraz z flagami bledow) dla DMA1
-	DMA1->HIFCR = DMA_HIFCR_CTCIF6 | DMA_HIFCR_CHTIF6 | DMA_HIFCR_CTEIF6 | DMA_HIFCR_CDMEIF6 | DMA_HIFCR_CFEIF6;
-	USART2->SR &= ~(USART_SR_TC);
+	// clear status bits (including error flags) of DMA2 controller (transmission channel)
+	DMA2->HIFCR = DMA_HIFCR_CTCIF7 | DMA_HIFCR_CHTIF7 | DMA_HIFCR_CTEIF7 | DMA_HIFCR_CDMEIF7 | DMA_HIFCR_CFEIF7;
+	USART1->SR &= ~(USART_SR_TC);
 
 	isFrameSending = true;
 
-	// zezwolenie na przerwanie od kanalu DMA
+	// permission for DMA interrupt
 	DMA_USART_TX->CR |= DMA_SxCR_TCIE;
-	// zalaczenie kanalu DMA i start transmisji
+
+	// enable of DMA channel and transmission start
 	DMA_USART_TX->CR |= DMA_SxCR_EN;
 }
 
 void UartCommunicationInterface::PeriodicUpdate()
 {
 
-  // sprawdzenie, czy ramka zostala obsluzona oraz czy nie zachodzi wysy³anie ramki - jesli nie to brak analizy nastepnej
+  // check if a frame has not been decoded yet or a frame is being transmitted
   if (isFrameReceived || isFrameSending) return;
 
-  // sprawdzenie, czy odbior ramki nie trwa zbyt dlugo
+  // check if a frame is being collected too long
   if (rxState != FR_IDLE)
   {
 	  clock++;
 	  if (clock > RX_TIMEOUT)
 	  {
-		  // jesli czas jest przekroczony, to ramka jest ignorowana
+		  // if timeout occurred then ignore data
 		  rxState = FR_IDLE;
 	  }
   }
 
-  // czytanie licznika kanalu DMA
+  // read DMA counter
   auto rxDmaCounter = DMA_USART_RX->NDTR;
 
-  // sprawdzenie, czy w buforze sa nowe dane
+  // check if there are new characters
   if (rxDmaCounter != rxDmaCounterPrev) {
 
 	  rxDmaCounterPrev = rxDmaCounter;
 	  rxBufIndexWrite = RX_BUF_SIZE - rxDmaCounter;
 
-	  // przegladanie bufora odebranych znaków
+	  // search DMA buffer
 	  while ((rxBufIndexWrite != rxBufIndexRead) && (!isFrameReceived))
 	  {
-		  // pobranie znaku z buforu DMA
+		  // get a character from DMA buffer
 		  auto c = rxBuf[rxBufIndexRead];
 
+		  // use the following finite state machine to collect a frame
 		  switch (rxState)
 		  {
 		  	  case FR_IDLE:
