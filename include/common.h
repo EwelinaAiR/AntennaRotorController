@@ -3,11 +3,11 @@
 #include <string.h>
 
 #include "stm32f4xx.h"
-#include "rangfinder_2y0a21.h"
 #include "uart_communication_interface.h"
 #include "encoder_as5040.h"
 #include "led_interface.h"
 #include "filter2_iir.h"
+#include "analog_outputs.h"
 
 #include "data_recorder.h"
 
@@ -28,10 +28,11 @@ class App
 	volatile uint32_t mainClock;
 	volatile uint32_t auxClock;
 
+	uint16_t dacOutVal;
+
 public:
 
-
-	Rangfinder2Y0A21 rang;
+	AnalogOutputs analogOuts;
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 
@@ -40,6 +41,7 @@ public:
 	{
 		mainClock = 0;
 		auxClock = 0;
+		dacOutVal = 0;
 	};
 
 	void GeneralHardwareInit()
@@ -56,18 +58,14 @@ public:
 		NVIC_EnableIRQ(DMA1_Stream6_IRQn);
 		NVIC_EnableIRQ(USART2_IRQn);
 		NVIC_EnableIRQ(SPI2_IRQn);
-		NVIC_EnableIRQ(EXTI0_IRQn);
 	}
 
 	void Init()
 	{
 		GeneralHardwareInit();
 		enc.Init();
-	    rang.Init();
-		com.Init();
-
-		rang.Start();
-
+	    com.Init();
+		analogOuts.Init();
 	}
 
 	void PeriodicUpdate()
@@ -76,8 +74,8 @@ public:
 		auxClock++;
 
 		com.PeriodicUpdate();
-		rang.PeriodicUpdate();
 		enc.WriteReadStart();
+		analogOuts.SetOutput1((dacOutVal++)>>4);
 
 		if (auxClock == 500)
 		{
@@ -104,12 +102,6 @@ public:
 			if(enc.isDataReady)
 			{
 				enc.isDataReady = false;
-			}
-
-			if(rang.isDataReady)
-			{
-				// obrobka sygnalu
-
 			}
 		}
 	}

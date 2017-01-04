@@ -16,7 +16,7 @@ void Delay(volatile uint32_t count)
 
 
 void EXTI0_IRQHandler(void) {
-	pApp->rang.Irq();
+
 }
 
 void SPI2_IRQHandler(void) {
