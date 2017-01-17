@@ -5,8 +5,8 @@ extern "C"
 	void SysTick_Handler(void);
 	void EXTI0_IRQHandler(void);
 	void SPI2_IRQHandler(void);
-	void DMA1_Stream6_IRQHandler(void);
-	void USART2_IRQHandler(void);
+	void DMA2_Stream7_IRQHandler(void);
+	void USART1_IRQHandler(void);
 }
 
 void Delay(volatile uint32_t count)
@@ -24,13 +24,13 @@ void SPI2_IRQHandler(void) {
 }
 
 // Obsluga przerwania od nadajnika UART poprzez DMA
-void DMA1_Stream6_IRQHandler()
+void DMA2_Stream7_IRQHandler()
 {
 	pApp->com.IrqDma();
 }
 
 // Obsluga przerwania od odbiornika/nadajnika USART2
-void USART2_IRQHandler() {
+void USART1_IRQHandler() {
 	pApp->com.IrqTx();
 }
 

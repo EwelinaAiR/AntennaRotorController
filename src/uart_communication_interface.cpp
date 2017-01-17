@@ -60,17 +60,18 @@ void UartCommunicationInterface::HardwareInit()
 	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 
 	// PA9 - UART1_TX (out), PA10 - UART_RX (in)
+	// PA8 - driver enable
 	// GPIOs remapping (based on manual STM32F407)
 	// TO DO! Enable hardware driver!!!
 	GPIOA->AFR[1] &= ~((uint32_t) 0xF << (4*(9-8)) | (uint32_t) 0xF << (4*(10-8)));
 	GPIOA->AFR[1] |= (uint32_t) 7 << (4*(9-8)) | (uint32_t) 7 << (4*(10-8));
 
-	GPIOA->MODER |=  GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1;
+	GPIOA->MODER |=  GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_1 | GPIO_MODER_MODER10_1;
 	GPIOA->OSPEEDR |= GPIO_OSPEEDER_OSPEEDR9_1 | GPIO_OSPEEDER_OSPEEDR10_1;
-	GPIOA->ODR |= GPIO_ODR_ODR_9;
+	GPIOA->ODR |= GPIO_ODR_ODR_9 | GPIO_ODR_ODR_8;
 
 	// USART settings
-	USART1->BRR = 0x16D; //115,2kbs //0x0341;//
+	USART1->BRR = 8750; //0x0341;// 0x16D; //115,2kbs ////0x0341;
 	USART1->CR1 = USART_CR1_RE | USART_CR1_TE;
 	USART1->CR3 = USART_CR3_DMAT | USART_CR3_DMAR;
 	USART1->CR1 |= USART_CR1_UE;

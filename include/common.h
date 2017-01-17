@@ -36,6 +36,8 @@ public:
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 
+	tick bool;
+
 
 	App(): filter1(filterParams1)
 	{
@@ -49,14 +51,15 @@ public:
 		// inicjalizacja mikrokontrolera
 		SystemInit();
 
+
 		// ustawienie zegara systemowego w programie
 		if (SysTick_Config(CPU_CLK/1000))
 		{
 			while (1);
 		}
 
-		NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-		NVIC_EnableIRQ(USART2_IRQn);
+		NVIC_EnableIRQ(DMA2_Stream7_IRQn);
+		NVIC_EnableIRQ(USART1_IRQn);
 		NVIC_EnableIRQ(SPI2_IRQn);
 	}
 
@@ -66,20 +69,25 @@ public:
 		enc.Init();
 	    com.Init();
 		analogOuts.Init();
+		tick = false;
 	}
 
 	void PeriodicUpdate()
 	{
+		tick = true;
 		mainClock++;
 		auxClock++;
 
 		com.PeriodicUpdate();
 		enc.WriteReadStart();
-		analogOuts.SetOutput1((dacOutVal++)>>4);
+		analogOuts.SetOutput1((dacOutVal)>>4);
+		analogOuts.SetOutput2((dacOutVal)>>4);
 
+		dacOutVal += 256;
 		if (auxClock == 500)
 		{
 		  Led::Green()^= 1;
+		  //com.Send(sizeof(float));
 		  auxClock = 0;
 		}
 	}
@@ -88,11 +96,13 @@ public:
 	{
 		while(1)
 		{
+
 			if(com.isFrameReceived)
 			{
 				if(com.CheckFrame())
 				{
 					// przygotowanie danych do wyslania
+					filter1.output = 13;
 					memcpy(com.txData, &filter1.output, sizeof(float));
 					com.Send(sizeof(float));
 				}
@@ -102,6 +112,13 @@ public:
 			if(enc.isDataReady)
 			{
 				enc.isDataReady = false;
+			}
+
+			if (tick)
+			{
+				// obliczenia
+				tick = false;
+
 			}
 		}
 	}
