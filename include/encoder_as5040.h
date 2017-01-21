@@ -28,6 +28,13 @@ class EncoderAS5040
 	void HardwareInit();
 
 public:
+	 bool bitOCF;
+	 bool bitCOF;
+	 bool bitLIN;
+	 bool bitINC;
+	 bool bitDEC;
+	 bool bitPAR;
+	 bool buff[16];
 
 	volatile bool isDataReady;
 	volatile bool readIsOk;
@@ -79,7 +86,20 @@ public:
 
 	void ScaleData()
 	{
-
+		 for (int c = 16; c >= 0; c--)
+		  {
+		    int k = data >> c;
+		    if (k & 1)
+		    	buff[16-c] = 1;
+		    else
+		    	buff[16-c] = 0;
+		  }
+		 bitOCF = buff[5];
+		 bitCOF = buff[4];
+		 bitLIN = buff[3];
+		 bitINC = buff[2];
+		 bitDEC = buff[1];
+		 bitPAR = buff[0];
 	}
 
 	void CalculateAngles()
