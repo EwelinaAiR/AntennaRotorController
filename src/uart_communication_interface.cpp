@@ -103,6 +103,7 @@ void UartCommunicationInterface::Init()
 
 	rxDmaCounterPrev = DMA_USART_RX->NDTR;
 	txData = txBuf + 4;
+	rxData = rxFrame + 4;
 	txBuf[0] = txBuf[1] = 0xAA; txBuf[2] = 0x00;	// inicjalizacja poczatku ramki nadawanej
 }
 
@@ -113,7 +114,6 @@ void UartCommunicationInterface::Send(uint16_t size)
 	auto crc = CRC16(txBuf+3, size+1);
 	txBuf[size+4] = crc >> 8;
 	txBuf[size+5] = crc & 0xFF;
-
 	// reset DMA channel
 	DMA_USART_TX->CR = 0;
 	DMA_USART_TX->CR = DMA_SxCR_CHSEL_2 | DMA_SxCR_MINC | DMA_SxCR_DIR_0;

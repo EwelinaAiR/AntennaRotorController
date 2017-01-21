@@ -11,15 +11,13 @@ class EncoderAS5040
 	// Definicje stanow automatu do obslugi akcelerometru
 	enum FsmState
 	{
-		STATE_IDLE,
 		STATE_STATUS,
-		STATE_X_AXIS,
-		STATE_Y_AXIS,
-		STATE_Z_AXIS
+		STATE_ANGLE,
 	};
 
-	volatile uint16_t u16Data;
 
+	volatile uint16_t u16Data;
+	uint16_t data;
 	FsmState fsmState;
 
 	static volatile unsigned long & SPI_CS()
@@ -32,6 +30,9 @@ class EncoderAS5040
 public:
 
 	volatile bool isDataReady;
+	volatile bool readIsOk;
+	float angleValue;
+
 
 	// Wymiana danych na SPI z blokowaniem
 	uint16_t WriteReadBlock(uint16_t data)
@@ -62,7 +63,6 @@ public:
 		HardwareInit();
 
 		isDataReady = false;
-		fsmState = STATE_IDLE;
 		u16Data = SPI2->DR;
 		// ustawienie akcelerometru
 		// zezwolenie na obsluge przerwan od odbiornika SPI
@@ -71,13 +71,11 @@ public:
 
 	void Irq()
 	{
-	    uint16_t data;
+
 		SPI_CS() = 1;
 		data = (SPI2->DR);
-		Fsm(data);
-	}
 
-	void Fsm(uint16_t);
+	}
 
 	void ScaleData()
 	{
@@ -86,7 +84,22 @@ public:
 
 	void CalculateAngles()
 	{
-
+		data = data >> 6; //otrzymujemy liczbê 10 bitow¹
+		angleValue = data * 0,35; // obiczamy k¹t
+	}
+	//EvenPAR = 1
+	//MagINC = 0
+	//MagDEC = 0
+	//LIN = 0
+	//COF = 0
+	//OCF = 1
+	//takie statusy pozwalaj¹ na poprawny odczyt?
+	//100001 = 33(DEC)
+	void CheckStatus(uint8_t status){
+	status = data && 0x3F;
+		if(status == 33){
+			readIsOk = true;
+		}
 	}
 };
 

@@ -36,7 +36,7 @@ public:
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 
-	tick bool;
+	bool tick ;
 
 
 	App(): filter1(filterParams1)

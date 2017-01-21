@@ -1,2 +1,4 @@
 output/*
 *.cogui
+/AntennaRotorController/Debug/bin
+/AntennaRotorController/Debug/obj
