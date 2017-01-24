@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string.h>
-
 #include "stm32f4xx.h"
 #include "uart_communication_interface.h"
 #include "encoder_as5040.h"
@@ -36,8 +35,7 @@ public:
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 
-	bool tick ;
-
+	bool tick;
 
 	App(): filter1(filterParams1)
 	{
@@ -116,7 +114,18 @@ public:
 
 			if (tick)
 			{
-				// obliczenia
+				if(enc.bitINC || enc.bitDEC)
+				{
+					//komunikat o bledzie ustawienia magnesu
+				}
+				if(enc.bitCOF)
+				{
+					//komunikat o bledzie wartosci odczytu
+				}
+				if(enc.bitLIN)
+				{
+					//komunikat o MOZLIWYM bledzie odczytu
+				}
 				tick = false;
 
 			}
