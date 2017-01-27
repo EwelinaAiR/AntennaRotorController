@@ -9,13 +9,10 @@ class EncoderAS5040
 {
 	static uint8_t const ZYXDA_BIT = 0x08;
 
-
-
-	// Definicje stanow automatu do obslugi akcelerometru
 	enum EncoderState
 	{
 		STATE_STATUS,
-		STATE_ANGLE
+		STATE_POSITION
 	};
 
 	volatile uint16_t u16Data;
@@ -37,6 +34,8 @@ public:
 	 bool bitDEC;
 	 bool bitPAR;
 	 static float angleValue;
+	 uint16_t anglebits = 0;
+	 uint16_t angledata;
 	 uint16_t data;
 	 bool buff[16];
 
@@ -86,6 +85,8 @@ public:
 	}
 
 
+	void EncoderUpdate();
+
 	void ScaleData()
 	{
 		 for (int c = 16; c >= 0; c--)
@@ -106,9 +107,8 @@ public:
 
 	void CalculateAngles()
 		{
-			data = data >> 6; //otrzymujemy 10bitow¹ wartosc k¹ta odczytan¹ na enkoderze
-			angleValue = data * 0.3515625; // obliczamy k¹t
-			angleValue = STATE_ANGLE;
+			angledata = data >> 6; //otrzymujemy 10bitow¹ wartosc k¹ta odczytan¹ na enkoderze
+			angleValue = angledata * 0.3515625; // obliczamy k¹t
 		}
 
 };

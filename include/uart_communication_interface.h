@@ -41,6 +41,7 @@ class UartCommunicationInterface
 	uint8_t txBuf[TX_BUF_SIZE];
 
 	uint8_t rxFrame[RX_BUF_SIZE];
+	uint8_t txFrame[TX_BUF_SIZE];
 
 	uint16_t CRC16(const uint8_t *nData, uint16_t wLength);
 

@@ -49,7 +49,6 @@ public:
 		// inicjalizacja mikrokontrolera
 		SystemInit();
 
-
 		// ustawienie zegara systemowego w programie
 		if (SysTick_Config(CPU_CLK/1000))
 		{
@@ -90,6 +89,10 @@ public:
 		}
 	}
 
+	void SendFrame()
+	{
+
+	}
 	void Run()
 	{
 		while(1)
@@ -114,18 +117,7 @@ public:
 
 			if (tick)
 			{
-				if(enc.bitINC || enc.bitDEC)
-				{
-					//komunikat o bledzie ustawienia magnesu
-				}
-				if(enc.bitCOF)
-				{
-					//komunikat o bledzie wartosci odczytu
-				}
-				if(enc.bitLIN)
-				{
-					//komunikat o MOZLIWYM bledzie odczytu
-				}
+
 				tick = false;
 
 			}

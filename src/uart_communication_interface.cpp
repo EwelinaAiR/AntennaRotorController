@@ -110,6 +110,12 @@ void UartCommunicationInterface::Init()
 void UartCommunicationInterface::Send(uint16_t size)
 {
 
+	/*
+	 * txFrame = data;
+	 * txBuf[4] = txFrame;
+	 *
+	 *
+	 */
 	txBuf[3] = size;
 	auto crc = CRC16(txBuf+3, size+1);
 	txBuf[size+4] = crc >> 8;
