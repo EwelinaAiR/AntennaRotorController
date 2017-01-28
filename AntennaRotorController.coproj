@@ -30,7 +30,7 @@
         <Option name="Library" value="Not use C Library"/>
         <Option name="UserEditLinker" value=""/>
         <LinkedLibraries>
-          <Libset dir="..\..\..\..\..\program files (x86)\gnu tools arm embedded\6.2 2016q4\arm-none-eabi\lib\" libs="m"/>
+          <Libset dir="..\..\..\..\..\..\gnu tools arm embedded\5.4 2016q2\arm-none-eabi\lib\armv7e-m\" libs="m"/>
         </LinkedLibraries>
         <MemoryAreas debugInFlashNotRAM="0">
           <Memory name="IROM1" type="ReadOnly" size="0x00010000" startValue="0x20000000"/>
@@ -38,7 +38,7 @@
           <Memory name="IROM2" type="ReadOnly" size="" startValue=""/>
           <Memory name="IRAM2" type="ReadWrite" size="0x00010000" startValue="0x10000000"/>
         </MemoryAreas>
-        <LocateLinkFile path="d:/tools/coocox/coide/configuration/programdata/antennarotorcontroller/arm-gcc-link.ld" type="0"/>
+        <LocateLinkFile path="../../../../../../coocox/coide/configuration/programdata/antennarotorcontroller/arm-gcc-link.ld" type="0"/>
       </Link>
       <Output>
         <Option name="OutputFileType" value="0"/>
@@ -70,7 +70,7 @@
       <Option name="org.coocox.codebugger.gdbjtag.core.verify" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.downloadFuction" value="Erase Effected"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="STM32F4xx_1024.elf"/>
-      <Option name="org.coocox.codebugger.gdbjtag.coredebugInRamInitCommands" value="cd C:/Users/Szymoniasty/Documents/GitHub/AntennaRotorController/output/Debug/bin restore AntennaRotorController.elf set {unsigned int*}0xE000ED08 = 0x20000000 set $sp = {unsigned int*}0x20000000 set $pc = {unsigned int*}0x20000004 "/>
+      <Option name="org.coocox.codebugger.gdbjtag.coredebugInRamInitCommands" value="cd C:/Users/Ewelina/Desktop/Studia/Inzynierka/AntennaRotorController/AntennaRotorController/Debug/bin restore output.elf set {unsigned int*}0xE000ED08 = 0x20000000 set $sp = {unsigned int*}0x20000000 set $pc = {unsigned int*}0x20000004 "/>
     </DebugOption>
     <ExcludeFile/>
   </Target>

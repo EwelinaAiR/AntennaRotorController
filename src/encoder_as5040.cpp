@@ -1,6 +1,5 @@
 #include "encoder_as5040.h"
 
-float EncoderAS5040::angleValue;
 
 void EncoderAS5040::HardwareInit()
 {
@@ -30,51 +29,3 @@ void EncoderAS5040::HardwareInit()
 	SPI2->CR1 |= SPI_CR1_SPE;
 }
 
-void EncoderAS5040::EncoderUpdate()
-{
-	for (int i = 16; i >= 0; i--)
-			  {
-			    int k = data >> i;
-			    if (k & 1)
-			    	buff[16-i] = 1;
-			    else
-			    	buff[16-i] = 0;
-			  }
-			 bitOCF = buff[5];
-			 bitCOF = buff[4];
-			 bitLIN = buff[3];
-			 bitINC = buff[2];
-			 bitDEC = buff[1];
-			 bitPAR = buff[0];
-	switch(encoderState)
-	{
-		case STATE_STATUS:
-				if(bitINC || bitDEC)
-				{
-					//komunikat o bledzie ustawienia magnesu
-				}
-				if(bitCOF)
-				{
-					//komunikat o bledzie wartosci odczytu
-				}
-				if(bitLIN)
-				{
-					//komunikat o MOZLIWYM bledzie odczytu
-				}
-				else {
-					encoderState = STATE_POSITION;
-				}
-		case STATE_POSITION:
-		{
-
-
-		}
-			/*for(int i = 16; i >= 6; i--)
-			{
-				anglebits += buff[i]*2^(i-6);
-				encoderState = STATE_STATUS;
-			}*/
-
-
-	}
-}
