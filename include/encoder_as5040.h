@@ -30,15 +30,17 @@ class EncoderAS5040
 	void HardwareInit();
 
 public:
-	 bool bitOCF;
-	 bool bitCOF;
-	 bool bitLIN;
-	 bool bitINC;
-	 bool bitDEC;
-	 bool bitPAR;
+	 const int stat_S1 = (1 << 15);
+	 const int stat_S2 = (1 << 14);
+	 const int stat_S3 = (1 << 13);
+	 const int stat_S4 = (1 << 12);
+	 const int stat_S5 = (1 << 11);
+	 const int stat_S6 = (1 << 10);
+
+	 bool error;
+
 	 static float angleValue;
 	 uint16_t data;
-	 bool buff[16];
 
 	volatile bool isDataReady;
 
@@ -88,20 +90,24 @@ public:
 
 	void ScaleData()
 	{
-		 for (int c = 16; c >= 0; c--)
-		  {
-		    int k = data >> c;
-		    if (k & 1)
-		    	buff[16-c] = 1;
-		    else
-		    	buff[16-c] = 0;
-		  }
-		 bitOCF = buff[5];
-		 bitCOF = buff[4];
-		 bitLIN = buff[3];
-		 bitINC = buff[2];
-		 bitDEC = buff[1];
-		 bitPAR = buff[0];
+		if ((data & stat_S1) == data){
+			error = false;
+		}
+		if ((data & stat_S2) == data){
+			error = false;
+		}
+		if ((data & stat_S3) == data){
+			error = false;
+		}
+		if ((data & stat_S4) == data){
+			error = true;
+		}
+		if ((data & stat_S5) == data){
+			error = true;
+		}
+		if ((data & stat_S6) == data){
+			error = false;
+		}
 	}
 
 	void CalculateAngles()
