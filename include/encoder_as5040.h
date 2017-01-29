@@ -9,18 +9,10 @@ class EncoderAS5040
 {
 	static uint8_t const ZYXDA_BIT = 0x08;
 
-	static float stateAngle =  0.3515625;
+	const float angleStep =  0.3515625;
 
-	// Definicje stanow automatu do obslugi akcelerometru
-	enum EncoderState
-	{
-		STATE_STATUS,
-		STATE_ANGLE
-	};
 
 	volatile uint16_t u16Data;
-
-	EncoderState encoderState;
 
 	static volatile unsigned long & SPI_CS()
 	{
@@ -30,13 +22,14 @@ class EncoderAS5040
 	void HardwareInit();
 
 public:
-	 const int stat_S1 = (1 << 15);
-	 const int stat_S2 = (1 << 14);
-	 const int stat_S3 = (1 << 13);
-	 const int stat_S4 = (1 << 12);
-	 const int stat_S5 = (1 << 11);
-	 const int stat_S6 = (1 << 10);
+	 const int stat_S1 = (1 << 15); //bit PAR
+	 const int stat_S2 = (1 << 14); //bit DEC
+	 const int stat_S3 = (1 << 13); //bit INC
+	 const int stat_S4 = (1 << 12); //bit LIN
+	 const int stat_S5 = (1 << 11); //bit COF
+	 const int stat_S6 = (1 << 10); //bit OCF
 
+	 uint8_t statusReport;
 	 bool error;
 
 	 static float angleValue;
@@ -90,31 +83,37 @@ public:
 
 	void ScaleData()
 	{
-		if ((data & stat_S1) == data){
-			error = false;
-		}
-		if ((data & stat_S2) == data){
-			error = false;
-		}
-		if ((data & stat_S3) == data){
-			error = false;
-		}
-		if ((data & stat_S4) == data){
-			error = true;
-		}
-		if ((data & stat_S5) == data){
-			error = true;
-		}
-		if ((data & stat_S6) == data){
-			error = false;
-		}
+
+	}
+
+	void CheckState()
+	{
+				if ((data & stat_S2) == stat_S2 || (data & stat_S3) == stat_S3){ //b³¹d odleg³osci magnesu
+					error = true;
+					statusReport = 1;
+				}
+				else if ((data & stat_S4) == stat_S4){ //mozliwy nieporawidlowy odczyt z enkodera - krytyczna liniowosæ wyjscia
+					error = true;
+					statusReport = 2;
+				}
+				else if ((data & stat_S5) == stat_S5){ //blad zakresu odczytu enkodera
+					error = true;
+					statusReport = 3;
+				}
+				else if ((data & stat_S6) == stat_S6){ //zakonczono algorytm kompensacji, dane poprawne
+					error = false;
+					statusReport = 4;
+				}
+				else {									//wszystko OK
+					error = false;
+					statusReport = 0;
+				}
 	}
 
 	void CalculateAngles()
 		{
 			data = data >> 6; //data D0:D9
-			angleValue = data * stateAngle; //calculate angle
-			angleValue = STATE_ANGLE;
+			angleValue = data * angleStep; //calculate angle
 		}
 
 };

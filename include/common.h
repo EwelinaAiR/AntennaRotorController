@@ -35,6 +35,13 @@ public:
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 
+	struct TxFrame
+	{
+		uint16_t rawData;
+		uint8_t stateRaport;
+	} toSend;
+
+
 	bool tick;
 
 	App(): filter1(filterParams1)
@@ -89,6 +96,12 @@ public:
 		  auxClock = 0;
 		}
 	}
+	void PrepareToSend()
+	{
+
+		toSend.rawData = enc.data;
+		toSend.stateRaport = enc.statusReport;
+	}
 
 	void Run()
 	{
@@ -100,9 +113,8 @@ public:
 				if(com.CheckFrame())
 				{
 					// przygotowanie danych do wyslania
-					filter1.output = 13;
-					memcpy(com.txData, &filter1.output, sizeof(float));
-					com.Send(sizeof(float));
+					memcpy(com.txData, &toSend, sizeof(toSend));
+					com.Send(sizeof(toSend));
 				}
 				com.isFrameReceived = false;
 			}
@@ -114,19 +126,6 @@ public:
 
 			if (tick)
 			{
-				if(enc.bitINC || enc.bitDEC)
-				{
-					//komunikat o bledzie ustawienia magnesu
-				}
-				if(enc.bitCOF)
-				{
-					//komunikat o bledzie wartosci odczytu
-				}
-				if(enc.bitLIN)
-				{
-					//komunikat o MOZLIWYM bledzie odczytu
-				}
-				tick = false;
 
 			}
 		}
