@@ -11,7 +11,6 @@ class EncoderAS5040
 
 	const float angleStep =  0.3515625;
 
-
 	volatile uint16_t u16Data;
 
 	static volatile unsigned long & SPI_CS()
@@ -83,7 +82,6 @@ public:
 
 	void ScaleData()
 	{
-<<<<<<< HEAD
 
 	}
 
@@ -109,26 +107,6 @@ public:
 					error = false;
 					statusReport = 0;
 				}
-=======
-		if ((data & stat_S1) == stat_S1){
-			error = false;
-		}
-		if ((data & stat_S2) == stat_S2){
-			error = false;
-		}
-		if ((data & stat_S3) == stat_S3){
-			error = false;
-		}
-		if ((data & stat_S4) == stat_S4){
-			error = true;
-		}
-		if ((data & stat_S5) == stat_S5){
-			error = true;
-		}
-		if ((data & stat_S6) == stat_S6){
-			error = false;
-		}
->>>>>>> origin/master
 	}
 
 	void CalculateAngles()
