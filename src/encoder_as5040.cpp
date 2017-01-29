@@ -1,5 +1,15 @@
 #include "encoder_as5040.h"
 
+/*void EncoderAS5040::Fsm(uint16_t data) {
+
+	switch (fsmState) {
+
+		default:
+			SPI_CS() = 0;
+		break;
+	}
+*/
+float EncoderAS5040::angleValue;
 
 void EncoderAS5040::HardwareInit()
 {
