@@ -7,6 +7,7 @@
 #include "led_interface.h"
 #include "filter2_iir.h"
 #include "analog_outputs.h"
+#include "regulator.h"
 
 #include "data_recorder.h"
 
@@ -34,7 +35,9 @@ public:
 	AnalogOutputs analogOuts;
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
+	Regulator regulator;
 
+	bool test;
 	struct TxFrame
 	{
 		uint16_t rawData;
@@ -74,7 +77,9 @@ public:
 		enc.Init();
 	    com.Init();
 		analogOuts.Init();
+		regulator.Init();
 		tick = false;
+
 	}
 
 	void PeriodicUpdate()
@@ -88,10 +93,21 @@ public:
 		analogOuts.SetOutput1((dacOutVal)>>4);
 		analogOuts.SetOutput2((dacOutVal)>>4);
 
+
 		dacOutVal += 256;
 		if (auxClock == 500)
 		{
 		  Led::Green()^= 1;
+		  if(test == true)
+		  {
+			  regulator.SetDir();
+			  test = false;
+		  }
+		  else
+		  {
+			  regulator.RstDir();
+			  test = true;
+		  }
 		  //com.Send(sizeof(float));
 		  auxClock = 0;
 		}

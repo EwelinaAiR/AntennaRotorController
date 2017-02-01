@@ -32,7 +32,7 @@ public:
 	 bool error;
 
 	 static float angleValue;
-	 uint16_t data;
+	volatile uint16_t data;
 
 	volatile bool isDataReady;
 
@@ -74,9 +74,10 @@ public:
 	void Irq()
 	{
 
-		SPI_CS() = 1;
-		data = (SPI2->DR);
 
+		data = SPI2->DR & 0x7fff;
+		CalculateAngles();
+		SPI_CS() = 1;
 	}
 
 
@@ -111,7 +112,7 @@ public:
 
 	void CalculateAngles()
 		{
-			data = data >> 6; //data D0:D9
+			data = data >> 5; //data D0:D9
 			angleValue = data * angleStep; //calculate angle
 		}
 
