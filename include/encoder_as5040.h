@@ -13,6 +13,8 @@ class EncoderAS5040
 
 	volatile uint16_t u16Data;
 
+	uint8_t status;
+
 	static volatile unsigned long & SPI_CS()
 	{
 		return bitband_t m_BITBAND_PERIPH(&GPIOB->ODR, 12);
@@ -112,6 +114,7 @@ public:
 
 	void CalculateAngles()
 		{
+			status = data & 0xF;
 			data = data >> 5; //data D0:D9
 			angleValue = data * angleStep; //calculate angle
 		}

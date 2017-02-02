@@ -32,7 +32,7 @@ void EncoderAS5040::HardwareInit()
 	GPIOB->MODER |= GPIO_MODER_MODER14_1 | GPIO_MODER_MODER13_1 | GPIO_MODER_MODER12_0;
 
 	// ustawienia SPI - transmisja 16-bitowa z programowa kontrola przeplywu
-	SPI2->CR1 = SPI_CR1_CPOL | SPI_CR1_MSTR | SPI_CR1_BR_2 | SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_CPHA | SPI_CR1_DFF;
+	SPI2->CR1 = SPI_CR1_MSTR | SPI_CR1_BR_2 | SPI_CR1_BR_1 |SPI_CR1_CPOL| SPI_CR1_SSM | SPI_CR1_SSI | SPI_CR1_DFF;
 	SPI2->CR2 = 0x00;
 
 	// wlaczenie urzadzenia

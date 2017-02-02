@@ -27,6 +27,8 @@ class App
 	// cykle w [ms]
 	volatile uint32_t mainClock;
 	volatile uint32_t auxClock;
+	volatile uint32_t wakeClock;
+	volatile uint32_t testClock;
 
 	uint16_t dacOutVal;
 
@@ -52,6 +54,8 @@ public:
 		mainClock = 0;
 		auxClock = 0;
 		dacOutVal = 0;
+		wakeClock = 0;
+		testClock = 0;
 	};
 
 	void GeneralHardwareInit()
@@ -87,18 +91,37 @@ public:
 		tick = true;
 		mainClock++;
 		auxClock++;
+		wakeClock++;
+		testClock++;
 
 		com.PeriodicUpdate();
 		enc.WriteReadStart();
 		analogOuts.SetOutput1((dacOutVal)>>4);
 		analogOuts.SetOutput2((dacOutVal)>>4);
 
+		if (testClock <= 5000)
+		{
 
+		  if (wakeClock == 20){
+				  		regulator.SetTrigMotor();
+				  }else if(wakeClock == 30){
+				  		regulator.RstTrigMotor();
+				  		wakeClock = 0;
+				  		}
+		}
+		else
+		{
+			if (testClock > 10000)
+			{
+				testClock = 0;
+				wakeClock = 0;
+			}
+		}
 		dacOutVal += 256;
 		if (auxClock == 500)
 		{
 		  Led::Green()^= 1;
-		  if(test == true)
+		  /*if(test == true)
 		  {
 			  regulator.SetDir();
 			  test = false;
@@ -107,10 +130,12 @@ public:
 		  {
 			  regulator.RstDir();
 			  test = true;
-		  }
-		  //com.Send(sizeof(float));
+		  }*/
+
+		  com.Send(2);
 		  auxClock = 0;
 		}
+
 	}
 	void PrepareToSend()
 	{
@@ -134,11 +159,11 @@ public:
 				}
 				com.isFrameReceived = false;
 			}
-
+/*
 			if(enc.isDataReady)
 			{
 				enc.isDataReady = false;
-			}
+			}*/
 
 			if (tick)
 			{
