@@ -33,8 +33,8 @@ class UartCommunicationInterface
     volatile uint8_t  crcLo;
 	volatile uint8_t  crcHi;
 
-	static uint8_t const RX_BUF_SIZE = 256;
-	static uint8_t const TX_BUF_SIZE = 256;
+	static uint16_t const RX_BUF_SIZE = 256;
+	static uint16_t const TX_BUF_SIZE = 256;
 
 
 	uint8_t rxBuf[RX_BUF_SIZE];

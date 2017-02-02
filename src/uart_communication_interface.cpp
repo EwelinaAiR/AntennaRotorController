@@ -71,7 +71,7 @@ void UartCommunicationInterface::HardwareInit()
 	GPIOA->ODR |= GPIO_ODR_ODR_9 | GPIO_ODR_ODR_8;
 
 	// USART settings
-	USART1->BRR = 8750; //0x0341;// 0x16D; //115,2kbs ////0x0341;
+	USART1->BRR = (uint16_t) (84000000/115200);
 	USART1->CR1 = USART_CR1_RE | USART_CR1_TE;
 	USART1->CR3 = USART_CR3_DMAT | USART_CR3_DMAR;
 	USART1->CR1 |= USART_CR1_UE;
@@ -90,7 +90,7 @@ void UartCommunicationInterface::HardwareInit()
 	// clear status bits (including error flags) of DMA2 controller (receive channel)
 	DMA2->HIFCR = DMA_HIFCR_CTCIF5 | DMA_HIFCR_CHTIF5 | DMA_HIFCR_CTEIF5 | DMA_HIFCR_CDMEIF5 | DMA_HIFCR_CFEIF5;
 
-	// enable of DMA interrupt
+	// enable the given DMA stream
 	DMA_USART_RX->CR |= DMA_SxCR_EN;
 }
 
@@ -104,7 +104,7 @@ void UartCommunicationInterface::Init()
 	rxDmaCounterPrev = DMA_USART_RX->NDTR;
 	txData = txBuf + 4;
 	rxData = rxFrame + 4;
-	txBuf[0] = txBuf[1] = 0xAA; txBuf[2] = 0x00;	// inicjalizacja poczatku ramki nadawanej
+	txBuf[0] = txBuf[1] = 0xAA; txBuf[2] = 0x00;	// init header of the transmitted frame
 }
 
 void UartCommunicationInterface::Send(uint16_t size)
@@ -154,7 +154,8 @@ void UartCommunicationInterface::PeriodicUpdate()
   auto rxDmaCounter = DMA_USART_RX->NDTR;
 
   // check if there are new characters
-  if (rxDmaCounter != rxDmaCounterPrev) {
+  if (rxDmaCounter != rxDmaCounterPrev)
+  {
 
 	  rxDmaCounterPrev = rxDmaCounter;
 	  rxBufIndexWrite = RX_BUF_SIZE - rxDmaCounter;

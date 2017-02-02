@@ -1,17 +1,10 @@
 /************************************************************************************************************
- *  Laboratorium SPAiR
+ *  Oprogramowanie mikontrolera STM32F4xx
  *
- *  Podstawowe oprogramowanie mikrokontrolera serii STM32F4xx
+ *	Nazwa pracy, itd.
+ *	Autorzy:
  *
- *  Zastosowanie w ukladzie pomiarowym
- *  Podstawowe funkcje oprogramowania:
- *   - zegar czasu rzeczywistego
- *   - obs³uga protoko³u komunikacyjnego z wykorzystaniem UART (z DMA)
- *   - obs³uga akcelerometru przez interfejs SPI
- *   - obs³uga przetwornika A/C (z DMA)
- *
- *   Opracowanie: D. Pazderski, Katedra Sterowania i In¿ynierii Systemów 2015
- *   v. 1.5.0
+ *	 Na podstawie: D. Pazderski, Katedra Sterowania i In¿ynierii Systemów 2016
  *
  ************************************************************************************************************/
 

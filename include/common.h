@@ -5,12 +5,10 @@
 #include "uart_communication_interface.h"
 #include "encoder_as5040.h"
 #include "led_interface.h"
-#include "filter2_iir.h"
 #include "analog_outputs.h"
-#include "regulator.h"
+//#include "regulator.h"
 
 #include "data_recorder.h"
-
 
 #define CPU_CLK	((uint32_t)168000000)
 
@@ -19,10 +17,6 @@ class App
 
 	DataRecorder < 2048, float > rec1;
 	//DataRecorder < 512, uint16_t > rec2;
-
-	float filterParams1[6] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-
-	Filter2Iir filter1;
 
 	// cykle w [ms]
 	volatile uint32_t mainClock;
@@ -35,7 +29,7 @@ public:
 	AnalogOutputs analogOuts;
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
-	Regulator regulator;
+	//Regulator regulator;
 
 	bool test;
 	struct TxFrame
@@ -47,7 +41,7 @@ public:
 
 	bool tick;
 
-	App(): filter1(filterParams1)
+	App()
 	{
 		mainClock = 0;
 		auxClock = 0;
@@ -77,7 +71,7 @@ public:
 		enc.Init();
 	    com.Init();
 		analogOuts.Init();
-		regulator.Init();
+		//regulator.Init();
 		tick = false;
 
 	}
@@ -100,12 +94,12 @@ public:
 		  Led::Green()^= 1;
 		  if(test == true)
 		  {
-			  regulator.SetDir();
+			  //regulator.SetDir();
 			  test = false;
 		  }
 		  else
 		  {
-			  regulator.RstDir();
+			  //regulator.RstDir();
 			  test = true;
 		  }
 		  //com.Send(sizeof(float));
