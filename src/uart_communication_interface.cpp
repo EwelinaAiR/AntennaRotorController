@@ -103,7 +103,7 @@ void UartCommunicationInterface::Init()
 
 	rxDmaCounterPrev = DMA_USART_RX->NDTR;
 	txData = txBuf + 4;
-	rxData = rxFrame + 4;
+	rxData = rxFrame + 1;
 	txBuf[0] = txBuf[1] = 0xAA; txBuf[2] = 0x00;	// init header of the transmitted frame
 }
 

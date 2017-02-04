@@ -29,6 +29,15 @@ public:
 		GPIOE->ODR |= GPIO_ODR_ODR_13;
 
 	}
+	void SetGen(){
+		GPIOE->ODR |= GPIO_ODR_ODR_13;
+
+	}
+	void RstGen()
+	{
+		GPIOE->ODR &= ~GPIO_ODR_ODR_13;
+
+	}
 	void SetDir(){
 		GPIOE->ODR|= GPIO_ODR_ODR_12;
 	}

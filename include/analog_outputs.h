@@ -11,7 +11,6 @@ public:
 	{
 		HardwareInit();
 	}
-
 	void HardwareInit()
 	{
 		// Set clocks
@@ -21,8 +20,6 @@ public:
 		// Analog mode, no pull up/down
 		GPIOA->MODER |= GPIO_MODER_MODER4 | GPIO_MODER_MODER5;
 		GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPDR4 | GPIO_PUPDR_PUPDR5);
-
-
 
 		// Set DAC channels
 		DAC->DHR12R1 = 0;

@@ -6,7 +6,7 @@
 #include "encoder_as5040.h"
 #include "led_interface.h"
 #include "analog_outputs.h"
-//#include "regulator.h"
+#include "regulator.h"
 
 #include "data_recorder.h"
 
@@ -31,7 +31,7 @@ public:
 	AnalogOutputs analogOuts;
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
-	//Regulator regulator;
+	Regulator regulator;
 
 	bool test;
 	struct TxFrame
@@ -47,7 +47,7 @@ public:
 	{
 		mainClock = 0;
 		auxClock = 0;
-		dacOutVal = 0;
+		dacOutVal = 3000;
 		wakeClock = 0;
 		testClock = 0;
 	};
@@ -75,7 +75,7 @@ public:
 		enc.Init();
 	    com.Init();
 		analogOuts.Init();
-		//regulator.Init();
+		regulator.Init();
 		tick = false;
 
 	}
@@ -90,10 +90,12 @@ public:
 
 		com.PeriodicUpdate();
 		enc.WriteReadStart();
+		dacOutVal = 64000;
 		analogOuts.SetOutput1((dacOutVal)>>4);
 		analogOuts.SetOutput2((dacOutVal)>>4);
 
-		if (testClock <= 5000)
+		regulator.SetGen();
+		if (testClock <= 2000)
 		{
 
 		  if (wakeClock == 20){
@@ -102,31 +104,31 @@ public:
 				  		regulator.RstTrigMotor();
 				  		wakeClock = 0;
 				  		}
+
 		}
-		else
-		{
-			if (testClock > 10000)
+			if (testClock > 4000)
 			{
+				regulator.RstGen();
 				testClock = 0;
 				wakeClock = 0;
 			}
-		}
-		dacOutVal += 256;
+			dacOutVal = 4000;
+		//dacOutVal += 0;
 		if (auxClock == 500)
 		{
 		  Led::Green()^= 1;
 		  /*if(test == true)
 		  {
-			  //regulator.SetDir();
+			  regulator.SetDir();
 			  test = false;
 		  }
 		  else
 		  {
-			  //regulator.RstDir();
+			  regulator.RstDir();
 			  test = true;
 		  }*/
 
-		  com.Send(2);
+
 		  auxClock = 0;
 		}
 
@@ -145,8 +147,13 @@ public:
 
 			if(com.isFrameReceived)
 			{
+
 				if(com.CheckFrame())
 				{
+
+					uint16_t recAngle = *((uint16_t *)com.rxData);
+
+					PrepareToSend();
 					// przygotowanie danych do wyslania
 					memcpy(com.txData, &toSend, sizeof(toSend));
 					com.Send(sizeof(toSend));

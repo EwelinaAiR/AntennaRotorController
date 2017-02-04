@@ -115,8 +115,9 @@ public:
 	void CalculateAngles()
 		{
 			status = data & 0xF;
-			data = data >> 5; //data D0:D9
-			angleValue = data * angleStep; //calculate angle
+			uint16_t value = data;
+			value = value >> 5; //data D0:D9
+			angleValue = value * angleStep; //calculate angle
 		}
 
 };
