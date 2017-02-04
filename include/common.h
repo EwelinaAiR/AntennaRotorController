@@ -1,12 +1,12 @@
 #pragma once
 
-#include <string.h>
 #include "stm32f4xx.h"
 #include "uart_communication_interface.h"
 #include "encoder_as5040.h"
 #include "led_interface.h"
 #include "analog_outputs.h"
 #include "regulator.h"
+#include "communication_frames.h"
 
 #include "data_recorder.h"
 
@@ -34,13 +34,6 @@ public:
 	Regulator regulator;
 
 	bool test;
-	struct TxFrame
-	{
-		uint16_t rawData;
-		uint8_t stateRaport;
-	} toSend;
-
-
 	bool tick;
 
 	App()
@@ -133,12 +126,6 @@ public:
 		}
 
 	}
-	void PrepareToSend()
-	{
-
-		toSend.rawData = enc.data;
-		toSend.stateRaport = enc.statusReport;
-	}
 
 	void Run()
 	{
@@ -147,25 +134,45 @@ public:
 
 			if(com.isFrameReceived)
 			{
-
 				if(com.CheckFrame())
 				{
+					static CmdMaster cmdM;
+					static CmdSlave cmdS;
 
-					uint16_t recAngle = *((uint16_t *)com.rxData);
+					com.GetUserData(&cmdM, sizeof(CmdMaster));
 
-					PrepareToSend();
-					// przygotowanie danych do wyslania
-					memcpy(com.txData, &toSend, sizeof(toSend));
-					com.Send(sizeof(toSend));
+					// now copy from smdM to specific user data
+
+					// check what kind of order you have got from Master
+					switch (cmdM.cmd)
+					{
+						case 1: // set desired angle
+							// copy cmdM.desiredAngle to set point value for the regulator
+							cmdS.encoderRawData = 200; //enc.data;
+							cmdS.status = enc.statusReport;
+							com.SendUserData(&cmdS, sizeof(CmdSlave));
+
+						break;
+
+						case 2:	// manual mode
+							// copy data from cmdM.manulaMode to output of the regulator (open-loop mode)
+							cmdS.encoderRawData = 200; //enc.data;
+							cmdS.encoderRawData = enc.statusReport;
+							com.SendUserData(&cmdS, sizeof(CmdSlave));
+
+
+						break;
+						// etc. - you can define more orders!
+
+						default:
+						break;
+					}
+
+
+
 				}
 				com.isFrameReceived = false;
 			}
-/*
-			if(enc.isDataReady)
-			{
-				enc.isDataReady = false;
-			}*/
-
 			if (tick)
 			{
 

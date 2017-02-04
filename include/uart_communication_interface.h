@@ -1,6 +1,7 @@
 #pragma once
 
 #include "stm32f4xx.h"
+#include <string.h>
 
 // powiazania kanalow DMA z nadajnikiem i odbiornikiem UART
 #define DMA_USART_RX	DMA2_Stream5
@@ -45,6 +46,7 @@ class UartCommunicationInterface
 	uint16_t CRC16(const uint8_t *nData, uint16_t wLength);
 
 	void HardwareInit();
+	void Send(uint16_t size);
 
 public:
 
@@ -57,7 +59,17 @@ public:
 
 	void Init(void);
 	void PeriodicUpdate();
-	void Send(uint16_t size);
+
+	void SendUserData(void * data, uint16_t size)
+	{
+		memcpy(txData, data, size);
+		Send(size);
+	}
+
+	void GetUserData(void * data, uint16_t size)
+	{
+		memcpy(data, rxData, size);
+	}
 
 	bool CheckFrame(void)
 	{

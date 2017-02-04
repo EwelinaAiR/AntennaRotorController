@@ -107,6 +107,7 @@ void UartCommunicationInterface::Init()
 	txBuf[0] = txBuf[1] = 0xAA; txBuf[2] = 0x00;	// init header of the transmitted frame
 }
 
+
 void UartCommunicationInterface::Send(uint16_t size)
 {
 
