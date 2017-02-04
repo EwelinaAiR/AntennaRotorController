@@ -1,11 +1,15 @@
-dataTab = zeros(1, 1000);
+dataValues = zeros(1, 1000);
+statusValues = zeros(1, 1000);
+
 flushinput(s);
 for i = 1:1000
-    com_send([0]);
-    pause(0.05);
+    com_send([10 1]);
+    pause(0.1);
     [data, data_size] = com_receive();
     % data
-    acc = typecast(data, 'single')
+    dane = typecast(data, 'uint16');
    
-    dataTab(i) = acc;
+    dataValues(i) = dane(1);
+    statusValues(i) = dane(2);
+
 end    
