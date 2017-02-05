@@ -9,7 +9,10 @@
 		break;
 	}
 */
-float EncoderAS5040::angleValue;
+
+
+
+//float_t EncoderAS5040::angleValue;
 
 void EncoderAS5040::HardwareInit()
 {

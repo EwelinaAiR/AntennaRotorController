@@ -30,7 +30,7 @@
         <Option name="Library" value="Not use C Library"/>
         <Option name="UserEditLinker" value=""/>
         <LinkedLibraries>
-          <Libset dir="resources\" libs="m"/>
+          <Libset dir="..\..\..\..\..\program files (x86)\gnu tools arm embedded\6.2 2016q4\arm-none-eabi\lib\" libs="m"/>
         </LinkedLibraries>
         <MemoryAreas debugInFlashNotRAM="0">
           <Memory name="IROM1" type="ReadOnly" size="0x00010000" startValue="0x20000000"/>
@@ -38,7 +38,7 @@
           <Memory name="IROM2" type="ReadOnly" size="" startValue=""/>
           <Memory name="IRAM2" type="ReadWrite" size="0x00010000" startValue="0x10000000"/>
         </MemoryAreas>
-        <LocateLinkFile path="d:/tools/arm/coocox/coide/configuration/programdata/antennarotorcontroller/arm-gcc-link.ld" type="0"/>
+        <LocateLinkFile path="d:/tools/coocox/coide/configuration/programdata/antennarotorcontroller/arm-gcc-link.ld" type="0"/>
       </Link>
       <Output>
         <Option name="OutputFileType" value="0"/>
@@ -70,7 +70,7 @@
       <Option name="org.coocox.codebugger.gdbjtag.core.verify" value="1"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.downloadFuction" value="Erase Effected"/>
       <Option name="org.coocox.codebugger.gdbjtag.core.defaultAlgorithm" value="STM32F4xx_1024.elf"/>
-      <Option name="org.coocox.codebugger.gdbjtag.coredebugInRamInitCommands" value="cd E:/praca/dydaktyka/dyplomowa/inz/firmware/studenci/AntennaRotorController/output/Debug/bin
+      <Option name="org.coocox.codebugger.gdbjtag.coredebugInRamInitCommands" value="cd C:/Users/Szymoniasty/Documents/GitHub/AntennaRotorController/output/Debug/bin
 restore AntennaRotorController.elf
 set {unsigned int*}0xE000ED08 = 0x20000000
 set $sp = {unsigned int*}0x20000000
@@ -85,33 +85,34 @@ set $pc = {unsigned int*}0x20000004
     <Component id="500" name="CMSIS BOOT" path="" type="2"/>
   </Components>
   <Files>
-    <File name="src/main.cpp" path="src/main.cpp" type="1"/>
     <File name="cmsis_boot/startup/startup_stm32f4xx.c" path="cmsis_boot/startup/startup_stm32f4xx.c" type="1"/>
+    <File name="src/main.cpp" path="src/main.cpp" type="1"/>
     <File name="src/common.cpp" path="src/common.cpp" type="1"/>
     <File name="cmsis/core_cmInstr.h" path="cmsis/core_cmInstr.h" type="1"/>
     <File name="cmsis_boot" path="" type="2"/>
     <File name="src" path="" type="2"/>
     <File name="inc/data_recorder.h" path="include/data_recorder.h" type="1"/>
     <File name="cmsis_boot/stm32f4xx.h" path="cmsis_boot/stm32f4xx.h" type="1"/>
-    <File name="inc" path="" type="2"/>
     <File name="cmsis_boot/startup" path="" type="2"/>
+    <File name="inc" path="" type="2"/>
     <File name="cmsis/core_cm4_simd.h" path="cmsis/core_cm4_simd.h" type="1"/>
     <File name="cmsis/core_cmFunc.h" path="cmsis/core_cmFunc.h" type="1"/>
-    <File name="cmsis_boot/system_stm32f4xx.c" path="cmsis_boot/system_stm32f4xx.c" type="1"/>
     <File name="cmsis/core_cm4.h" path="cmsis/core_cm4.h" type="1"/>
+    <File name="cmsis_boot/system_stm32f4xx.c" path="cmsis_boot/system_stm32f4xx.c" type="1"/>
     <File name="inc/led_interface.h" path="include/led_interface.h" type="1"/>
     <File name="cmsis" path="" type="2"/>
     <File name="syscalls/syscalls.c" path="syscalls/syscalls.c" type="1"/>
     <File name="inc/encoder_as5040.h" path="include/encoder_as5040.h" type="1"/>
     <File name="inc/common.h" path="include/common.h" type="1"/>
-    <File name="inc/communication_frames.h" path="resources/communication_frames.h" type="1"/>
     <File name="syscalls" path="" type="2"/>
+    <File name="inc/communication_frames.h" path="resources/communication_frames.h" type="1"/>
     <File name="cmsis_boot/stm32f4xx_conf.h" path="cmsis_boot/stm32f4xx_conf.h" type="1"/>
     <File name="src/encoder_as5040.cpp" path="src/encoder_as5040.cpp" type="1"/>
     <File name="cmsis_boot/system_stm32f4xx.h" path="cmsis_boot/system_stm32f4xx.h" type="1"/>
     <File name="cmsis/cmsis_nvic.h" path="cmsis/cmsis_nvic.h" type="1"/>
     <File name="inc/analog_outputs.h" path="include/analog_outputs.h" type="1"/>
-    <File name="inc/uart_communication_interface.h" path="include/uart_communication_interface.h" type="1"/>
+    <File name="inc/regulator.h" path="include/regulator.h" type="1"/>
     <File name="src/uart_communication_interface.cpp" path="src/uart_communication_interface.cpp" type="1"/>
+    <File name="inc/uart_communication_interface.h" path="include/uart_communication_interface.h" type="1"/>
   </Files>
 </Project>

@@ -9,7 +9,6 @@ class EncoderAS5040
 {
 	static uint8_t const ZYXDA_BIT = 0x08;
 
-	const float angleStep =  0.3515625;
 
 	volatile uint16_t u16Data;
 
@@ -30,11 +29,15 @@ public:
 	 const int stat_S5 = (1 << 11); //bit COF
 	 const int stat_S6 = (1 << 10); //bit OCF
 
+	 //float_t angleStep =  0.3515625f;
+	 //double_t Step = 0.3515625;
+
 	 uint8_t statusReport;
 	 bool error;
 
-	 static float angleValue;
-	volatile uint16_t data;
+	 float_t angleValue;
+	 uint16_t value;
+	 volatile uint16_t data;
 
 	volatile bool isDataReady;
 
@@ -112,12 +115,15 @@ public:
 				}
 	}
 
-	void CalculateAngles()
+	float_t CalculateAngles()
 		{
+
+			float_t angleStep =  0.3515625f;
 			status = data & 0xF;
-			uint16_t value = data;
+			value = data;
 			value = value >> 5; //data D0:D9
-			angleValue = value * angleStep; //calculate angle
+			angleValue = (float)value*angleStep; //calculate angle
+			return angleValue;
 		}
 
 };

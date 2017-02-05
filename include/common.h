@@ -25,6 +25,8 @@ class App
 	volatile uint32_t testClock;
 
 	uint16_t dacOutVal;
+	uint16_t offset;
+	uint16_t keyPressed;
 
 public:
 
@@ -32,17 +34,25 @@ public:
 	EncoderAS5040 enc;
 	UartCommunicationInterface com;
 	Regulator regulator;
+	CmdMaster cmdM;
 
 	bool test;
 	bool tick;
+	//------------------
+	bool needToMove;
+	bool dirPlus;
+	bool dirMinus;
+
 
 	App()
 	{
 		mainClock = 0;
 		auxClock = 0;
-		dacOutVal = 3000;
+		dacOutVal = 0;
 		wakeClock = 0;
 		testClock = 0;
+		offset = 3;
+		keyPressed = 0;
 	};
 
 	void GeneralHardwareInit()
@@ -73,55 +83,167 @@ public:
 
 	}
 
+	//-------------------------------------------------------------------------------------------------
+	//-------------------------Temporal Workspace------------------------------------------------------
+	//-------------------------------------------------------------------------------------------------
+
+
+	void Move()
+	{
+		if (wakeClock == 20)
+		{
+			regulator.SetTrigMotor();
+		}
+		else if(wakeClock == 30)
+		{
+			regulator.RstTrigMotor();
+			wakeClock = 0;
+		}
+	}
+	void ComparePos()
+	{
+		if(enc.angleValue < cmdM.desiredAngle-offset)
+		{
+			needToMove = true;
+			dirPlus = true;
+		}
+		else if(enc.angleValue > cmdM.desiredAngle+offset)
+		{
+			needToMove = true;
+			dirMinus = true;
+		}
+		else
+		{
+		needToMove = false;
+		dirMinus = false;
+		dirPlus = false;
+		}
+	}
+	void Accelerate()
+	{
+		if(dacOutVal<64000)
+		{
+			dacOutVal+=50;
+		}
+	}
+	void Decelerate()
+	{
+		if(dacOutVal>0)
+		{
+			dacOutVal-=50;
+		}
+	}
+	void ChooseMode()
+	{
+		switch(cmdM.cmd)
+		{
+		case 1:
+			MoveRotorManual();
+
+		break;
+
+		case 2:
+			ComparePos();
+			MoveRotorAuto();
+
+		break;
+
+		default:
+		break;
+
+		}
+	}
+	void MoveRotorManual()
+	{
+		switch (keyPressed)
+		{
+		case 1:
+			dacOutVal = 64000;
+			regulator.SetDir();
+			Move();
+
+		break;
+
+		case 2:
+			dacOutVal = 64000;
+			regulator.RstDir();
+			Move();
+
+		break;
+
+		default:
+		break;
+		}
+
+	}
+	void MoveRotorAuto()
+	{
+		if(needToMove)
+		{
+			if(dirPlus && ~dirMinus)
+			{
+				regulator.SetDir();
+				Move();
+				Accelerate();
+			}
+			else if(dirMinus && ~dirPlus)
+			{
+				regulator.RstDir();
+				Move();
+				Accelerate();
+			}
+			else if(dirMinus && dirPlus)
+			{
+				if(regulator.movingPlus)
+				{
+					Decelerate();
+					if(dacOutVal == 0)
+					{
+						regulator.moving = false;
+						dirPlus = false;
+						regulator.movingPlus = false;
+					}
+				}
+				if(regulator.movingMinus)
+				{
+					Decelerate();
+					if(dacOutVal == 0)
+					{
+						regulator.moving = false;
+						dirMinus = false;
+						regulator.movingMinus = false;
+					}
+				}
+			}
+
+
+		}
+
+	}
+
+
+
+	//----------------------------------------------------------------------------------------
+
+
 	void PeriodicUpdate()
 	{
 		tick = true;
 		mainClock++;
 		auxClock++;
-		wakeClock++;
+		regulator.wakeClock++;
 		testClock++;
 
 		com.PeriodicUpdate();
 		enc.WriteReadStart();
-		dacOutVal = 64000;
 		analogOuts.SetOutput1((dacOutVal)>>4);
 		analogOuts.SetOutput2((dacOutVal)>>4);
-
 		regulator.SetGen();
-		if (testClock <= 2000)
-		{
-
-		  if (wakeClock == 20){
-				  		regulator.SetTrigMotor();
-				  }else if(wakeClock == 30){
-				  		regulator.RstTrigMotor();
-				  		wakeClock = 0;
-				  		}
-
-		}
-			if (testClock > 4000)
-			{
-				regulator.RstGen();
-				testClock = 0;
-				wakeClock = 0;
-			}
-			dacOutVal = 4000;
-		//dacOutVal += 0;
+		ComparePos();
+		MoveRotorAuto();
 		if (auxClock == 500)
 		{
 		  Led::Green()^= 1;
-		  /*if(test == true)
-		  {
-			  regulator.SetDir();
-			  test = false;
-		  }
-		  else
-		  {
-			  regulator.RstDir();
-			  test = true;
-		  }*/
-
-
 		  auxClock = 0;
 		}
 
@@ -141,7 +263,7 @@ public:
 
 					com.GetUserData(&cmdM, sizeof(CmdMaster));
 
-					// now copy from smdM to specific user data
+					// now copy from cmdM to specific user data
 
 					// check what kind of order you have got from Master
 					switch (cmdM.cmd)
@@ -155,9 +277,9 @@ public:
 						break;
 
 						case 2:	// manual mode
-							// copy data from cmdM.manulaMode to output of the regulator (open-loop mode)
+							// copy data from cmdM.manualMode to output of the regulator (open-loop mode)
 							cmdS.encoderRawData = 200; //enc.data;
-							cmdS.encoderRawData = enc.statusReport;
+							cmdS.status = enc.statusReport;
 							com.SendUserData(&cmdS, sizeof(CmdSlave));
 
 

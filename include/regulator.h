@@ -8,6 +8,13 @@ class Regulator
 {
 public:
 
+	bool movingPlus;
+	bool movingMinus;
+	bool moving;
+	volatile uint32_t wakeClock;
+
+
+
 	void Init()
 	{
 		HardwareInit();
@@ -29,7 +36,8 @@ public:
 		GPIOE->ODR |= GPIO_ODR_ODR_13;
 
 	}
-	void SetGen(){
+	void SetGen()
+	{
 		GPIOE->ODR |= GPIO_ODR_ODR_13;
 
 	}
@@ -38,16 +46,27 @@ public:
 		GPIOE->ODR &= ~GPIO_ODR_ODR_13;
 
 	}
-	void SetDir(){
+	void SetDir()
+	{
 		GPIOE->ODR|= GPIO_ODR_ODR_12;
+		movingPlus = true;
+		movingMinus = false;
 	}
-	void RstDir(){
+	void RstDir()
+	{
 		GPIOE->ODR&= ~GPIO_ODR_ODR_12;
+		movingPlus = false;
+		movingMinus = true;
 	}
-	void SetTrigMotor(){
+	void SetTrigMotor()
+	{
 		GPIOE->ODR|= GPIO_ODR_ODR_14;
 	}
-	void RstTrigMotor(){
+	void RstTrigMotor()
+	{
 		GPIOE->ODR&= ~GPIO_ODR_ODR_14;
 	}
+
+
+
 };
