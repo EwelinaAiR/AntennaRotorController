@@ -1,9 +1,6 @@
 dataValues = zeros(1, 1000);
 statusValues = zeros(1, 1000);
 
-
-
-
 flushinput(s);
 for i = 1:1000
     

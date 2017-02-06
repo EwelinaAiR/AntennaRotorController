@@ -24,9 +24,17 @@ class App
 	volatile uint32_t wakeClock;
 	volatile uint32_t testClock;
 
-	uint16_t dacOutVal;
+	int16_t dacOutVal;
 	uint16_t offset;
 	uint16_t keyPressed;
+	uint16_t setValue;
+	int16_t error;
+	int16_t error2;
+	uint16_t dV;
+	uint16_t ADCmin;
+	uint16_t ADCmax;
+	int16_t calcAngleValue;
+	int16_t calcSetValue;
 
 public:
 
@@ -51,8 +59,8 @@ public:
 		dacOutVal = 0;
 		wakeClock = 0;
 		testClock = 0;
-		offset = 3;
 		keyPressed = 0;
+		setValue = 0;
 	};
 
 	void GeneralHardwareInit()
@@ -80,6 +88,11 @@ public:
 		analogOuts.Init();
 		regulator.Init();
 		tick = false;
+		offset = 3;
+		dV = 100;
+		ADCmin = 0;
+		ADCmax = 4095;
+		dacOutVal = 0;
 
 	}
 
@@ -94,7 +107,7 @@ public:
 		{
 			regulator.SetTrigMotor();
 		}
-		else if(wakeClock == 30)
+		else if(wakeClock >= 30)
 		{
 			regulator.RstTrigMotor();
 			wakeClock = 0;
@@ -102,37 +115,70 @@ public:
 	}
 	void ComparePos()
 	{
-		if(enc.angleValue < cmdM.desiredAngle-offset)
+		//calcAngleValue = enc.angleValue - 180;
+		//calcSetValue = setValue - 180;
+		error2 = setValue - enc.angleValue;
+if(setValue > enc.angleValue)
+{
+	error = setValue - enc.angleValue;
+}
+else if (setValue < enc.angleValue)
+{
+	error = enc.angleValue - setValue;
+}
+
+
+		if(error < offset )
 		{
-			needToMove = true;
-			dirPlus = true;
-		}
-		else if(enc.angleValue > cmdM.desiredAngle+offset)
-		{
-			needToMove = true;
-			dirMinus = true;
+
+
+			if (dacOutVal <= 0)
+			{
+				dacOutVal = ADCmin;
+				dirMinus = false;
+				dirPlus = false;
+			}
+			else
+			{
+				dacOutVal-=dV;
+				Move();
+			}
 		}
 		else
 		{
-		needToMove = false;
-		dirMinus = false;
-		dirPlus = false;
+			if(error2 > 0)
+			{
+				if(dacOutVal >= 4095)
+				{
+					dacOutVal = ADCmax;
+
+				}
+				else
+				{
+					dacOutVal+=dV;
+				}
+
+				dirPlus = true;
+				MoveRotorAuto();
+			}
+			if(error2 < 0)
+			{
+				if(dacOutVal >= 4095)
+				{
+					dacOutVal = ADCmax;
+
+				}
+				else
+				{
+					dacOutVal+=dV;
+				}
+				dirMinus = true;
+				MoveRotorAuto();
+			}
 		}
+
 	}
-	void Accelerate()
-	{
-		if(dacOutVal<64000)
-		{
-			dacOutVal+=50;
-		}
-	}
-	void Decelerate()
-	{
-		if(dacOutVal>0)
-		{
-			dacOutVal-=50;
-		}
-	}
+
 	void ChooseMode()
 	{
 		switch(cmdM.cmd)
@@ -157,72 +203,41 @@ public:
 	{
 		switch (keyPressed)
 		{
-		case 1:
-			dacOutVal = 64000;
-			regulator.SetDir();
-			Move();
+			case 1:
+				dacOutVal = 4095;
+				regulator.SetDir();
+				Move();
 
-		break;
+			break;
+			case 2:
+				dacOutVal = 4095;
+				regulator.RstDir();
+				Move();
 
-		case 2:
-			dacOutVal = 64000;
-			regulator.RstDir();
-			Move();
-
-		break;
-
+			break;
 		default:
 		break;
 		}
-
 	}
 	void MoveRotorAuto()
 	{
-		if(needToMove)
-		{
 			if(dirPlus && ~dirMinus)
 			{
 				regulator.SetDir();
 				Move();
-				Accelerate();
 			}
 			else if(dirMinus && ~dirPlus)
 			{
 				regulator.RstDir();
 				Move();
-				Accelerate();
 			}
 			else if(dirMinus && dirPlus)
 			{
-				if(regulator.movingPlus)
-				{
-					Decelerate();
-					if(dacOutVal == 0)
-					{
-						regulator.moving = false;
-						dirPlus = false;
-						regulator.movingPlus = false;
-					}
-				}
-				if(regulator.movingMinus)
-				{
-					Decelerate();
-					if(dacOutVal == 0)
-					{
-						regulator.moving = false;
-						dirMinus = false;
-						regulator.movingMinus = false;
-					}
-				}
+
 			}
 
 
-		}
-
 	}
-
-
-
 	//----------------------------------------------------------------------------------------
 
 
@@ -231,13 +246,13 @@ public:
 		tick = true;
 		mainClock++;
 		auxClock++;
-		regulator.wakeClock++;
+		wakeClock++;
 		testClock++;
 
 		com.PeriodicUpdate();
 		enc.WriteReadStart();
-		analogOuts.SetOutput1((dacOutVal)>>4);
-		analogOuts.SetOutput2((dacOutVal)>>4);
+		analogOuts.SetOutput1((dacOutVal));
+		analogOuts.SetOutput2((dacOutVal));
 		regulator.SetGen();
 		ComparePos();
 		MoveRotorAuto();
@@ -269,16 +284,17 @@ public:
 					switch (cmdM.cmd)
 					{
 						case 1: // set desired angle
+							setValue = cmdM.desiredAngle;
 							// copy cmdM.desiredAngle to set point value for the regulator
-							cmdS.encoderRawData = 200; //enc.data;
+							cmdS.encoderRawData = enc.data;
 							cmdS.status = enc.statusReport;
 							com.SendUserData(&cmdS, sizeof(CmdSlave));
 
 						break;
 
 						case 2:	// manual mode
-							// copy data from cmdM.manualMode to output of the regulator (open-loop mode)
-							cmdS.encoderRawData = 200; //enc.data;
+							keyPressed = cmdM.remoteControl;// copy data from cmdM.remoteControl to output of the regulator (open-loop mode)
+							cmdS.encoderRawData = enc.data;
 							cmdS.status = enc.statusReport;
 							com.SendUserData(&cmdS, sizeof(CmdSlave));
 
